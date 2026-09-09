@@ -3,30 +3,42 @@ package com.pinpin.passkey_demo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pinpin.passkey_demo.ui.theme.Passkey_demoTheme
-
+import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
+import com.pinpin.passkey_demo.credential.PasskeyManager
+import com.pinpin.passkey_demo.data.PasskeyRepository
+import com.pinpin.passkey_demo.data.model.RegisterOptionsRequest
+import com.pinpin.passkey_demo.network.RetrofitClient
+import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        val passkeyManager = PasskeyManager(this)
+
+        val repository = PasskeyRepository(
+            api = RetrofitClient.passkeyApi,
+            passkeyManager = passkeyManager,
+            Gson()
+        )
+
+        val viewModel = PasskeyViewModel(
+            repository = repository
+        )
+
         setContent {
-            Passkey_demoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            PasskeyScreen(
+                onRegister = { username ->
+                    viewModel.register(username)
                 }
-            }
+            )
         }
+
     }
 }
 
