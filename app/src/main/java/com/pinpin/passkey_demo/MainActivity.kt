@@ -35,7 +35,11 @@ class MainActivity : ComponentActivity() {
             PasskeyScreen(
                 onRegister = { username ->
                     viewModel.register(username)
-                }
+                },
+                onLogin = { username ->
+                    viewModel.login(username)
+                },
+                loginSuccess = viewModel.loginSuccess,
             )
         }
 

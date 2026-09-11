@@ -1,5 +1,7 @@
 package com.pinpin.passkey_demo
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pinpin.passkey_demo.data.PasskeyRepository
@@ -11,6 +13,9 @@ import kotlinx.coroutines.launch
 class PasskeyViewModel(
     private val repository: PasskeyRepository
 ) : ViewModel() {
+
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess = _loginSuccess.asStateFlow()
 
     private val _isLoading =
         MutableStateFlow(false)
@@ -48,6 +53,33 @@ class PasskeyViewModel(
                 }
 
             _isLoading.value = false
+        }
+    }
+
+    fun login(username: String) {
+        viewModelScope.launch {
+
+            Log.d(
+                TAG,
+                "========== ViewModel Login START ==========",
+            )
+
+            repository
+                .login(username)
+                .onSuccess {
+                    Log.d(
+                        TAG,
+                        "========== ViewModel Login SUCCESS ==========",
+                    )
+                    _loginSuccess.value = true
+                }
+                .onFailure { error ->
+                    Log.e(
+                        TAG,
+                        "========== ViewModel Login FAILED ==========",
+                        error,
+                    )
+                }
         }
     }
 }
