@@ -7,6 +7,8 @@ import com.pinpin.passkey_demo.data.model.RegisterOptionsRequest
 import com.pinpin.passkey_demo.data.model.VerifyRegistrationRequest
 import com.pinpin.passkey_demo.network.PasskeyApi
 import android.util.Log
+import com.pinpin.passkey_demo.data.model.LoginOptionsRequest
+import com.pinpin.passkey_demo.data.model.VerifyLoginRequest
 
 
 class PasskeyRepository(
@@ -106,6 +108,169 @@ class PasskeyRepository(
                 TAG,
                 "========== Passkey Registration FAILED ==========",
                 e
+            )
+
+            Result.failure(e)
+        }
+    }
+
+    suspend fun login(
+        username: String,
+    ): Result<Unit> {
+        return try {
+
+            Log.d(
+                TAG,
+                "========== Passkey Login START ==========",
+            )
+
+            Log.d(
+                TAG,
+                "username = $username",
+            )
+
+            // ------------------------------------------------
+            // [1] Get Login Options
+            // ------------------------------------------------
+
+            Log.d(
+                TAG,
+                "[1] Request login options",
+            )
+
+            val options =
+                api.loginOptions(
+                    LoginOptionsRequest(
+                        username = username,
+                    ),
+                )
+
+            Log.d(
+                TAG,
+                "[1] Login options received",
+            )
+
+            Log.d(
+                TAG,
+                "userId = ${options.userId}",
+            )
+
+            Log.d(
+                TAG,
+                "challenge = ${options.challenge}",
+            )
+
+            // ------------------------------------------------
+            // [2] Ask Credential Manager
+            // ------------------------------------------------
+
+            Log.d(
+                TAG,
+                "[2] Calling Credential Manager",
+            )
+
+            val credential =
+                passkeyManager
+                    .getPasskey(
+                        gson.toJson(options),
+                    )
+                    .getOrThrow()
+
+            Log.d(
+                TAG,
+                "[2] Passkey retrieved successfully",
+            )
+
+            // ------------------------------------------------
+            // [3] Get WebAuthn authentication response
+            // ------------------------------------------------
+
+            val authenticationJson =
+                credential.authenticationResponseJson
+
+            Log.d(
+                TAG,
+                "[3] Authentication response received",
+            )
+
+            Log.d(
+                TAG,
+                "response JSON length = ${authenticationJson.length}",
+            )
+
+            Log.d(
+                TAG,
+                "response JSON = $authenticationJson",
+            )
+
+            val response =
+                JsonParser
+                    .parseString(
+                        authenticationJson,
+                    )
+                    .asJsonObject
+
+            Log.d(
+                TAG,
+                "[3] Authentication response parsed",
+            )
+
+            Log.d(
+                TAG,
+                "response keys = ${response.keySet()}",
+            )
+
+            // ------------------------------------------------
+            // [4] Send response to backend
+            // ------------------------------------------------
+
+            Log.d(
+                TAG,
+                "[4] Sending login response to Server",
+            )
+
+            val verifyResult =
+                api.verifyLogin(
+                    VerifyLoginRequest(
+                        userId = options.userId,
+                        response = response,
+                    ),
+                )
+
+            Log.d(
+                TAG,
+                "[4] Server verification result",
+            )
+
+            Log.d(
+                TAG,
+                "verified = ${verifyResult.verified}",
+            )
+
+            if (!verifyResult.verified) {
+                Log.e(
+                    TAG,
+                    "Passkey login verification FAILED",
+                )
+
+                error(
+                    "Passkey login verification failed",
+                )
+            }
+
+            Log.d(
+                TAG,
+                "========== Passkey Login SUCCESS ==========",
+            )
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+
+            Log.e(
+                TAG,
+                "========== Passkey Login FAILED ==========",
+                e,
             )
 
             Result.failure(e)

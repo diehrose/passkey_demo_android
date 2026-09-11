@@ -5,6 +5,10 @@ import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CreatePublicKeyCredentialResponse
 import androidx.credentials.CredentialManager
 import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.PublicKeyCredential
+import androidx.credentials.exceptions.GetCredentialException
 
 class PasskeyManager(
     private val context: Context
@@ -36,6 +40,50 @@ class PasskeyManager(
 
         } catch (e: CreateCredentialException) {
 
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Login with Passkey
+     */
+    suspend fun getPasskey(
+        requestJson: String,
+    ): Result<PublicKeyCredential> {
+        return try {
+
+            val option =
+                GetPublicKeyCredentialOption(
+                    requestJson = requestJson,
+                )
+
+            val request =
+                GetCredentialRequest(
+                    credentialOptions = listOf(option),
+                )
+
+            val result =
+                credentialManager.getCredential(
+                    context = context,
+                    request = request,
+                )
+
+            val credential =
+                result.credential
+
+            if (credential !is PublicKeyCredential) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Credential is not a PublicKeyCredential",
+                    ),
+                )
+            }
+
+            Result.success(credential)
+
+        } catch (e: GetCredentialException) {
+            Result.failure(e)
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }
