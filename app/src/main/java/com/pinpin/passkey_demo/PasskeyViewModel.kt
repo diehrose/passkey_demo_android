@@ -14,8 +14,17 @@ class PasskeyViewModel(
     private val repository: PasskeyRepository
 ) : ViewModel() {
 
-    private val _loginSuccess = MutableStateFlow(false)
-    val loginSuccess = _loginSuccess.asStateFlow()
+    private val _loginSuccess =
+        MutableStateFlow(false)
+
+    val loginSuccess =
+        _loginSuccess.asStateFlow()
+
+    private val _registerSuccess =
+        MutableStateFlow(false)
+
+    val registerSuccess =
+        _registerSuccess.asStateFlow()
 
     private val _isLoading =
         MutableStateFlow(false)
@@ -40,14 +49,30 @@ class PasskeyViewModel(
 
             _isLoading.value = true
             _message.value = null
+            _registerSuccess.value = false
 
             repository
                 .register(username)
                 .onSuccess {
-                    _message.value =
-                        "Passkey 建立成功"
+
+                    Log.d(
+                        TAG,
+                        "========== ViewModel Register SUCCESS ==========",
+                    )
+
+                    _registerSuccess.value = true
+                    _message.value = "Passkey 建立成功"
                 }
                 .onFailure { error ->
+
+                    Log.e(
+                        TAG,
+                        "========== ViewModel Register FAILED ==========",
+                        error,
+                    )
+
+                    _registerSuccess.value = false
+
                     _message.value =
                         "Passkey 建立失敗：${error.message}"
                 }
@@ -57,6 +82,12 @@ class PasskeyViewModel(
     }
 
     fun login(username: String) {
+
+        if (username.isBlank()) {
+            _message.value = "Username 不可為空"
+            return
+        }
+
         viewModelScope.launch {
 
             Log.d(
@@ -64,22 +95,37 @@ class PasskeyViewModel(
                 "========== ViewModel Login START ==========",
             )
 
+            _isLoading.value = true
+            _message.value = null
+            _loginSuccess.value = false
+
             repository
                 .login(username)
                 .onSuccess {
+
                     Log.d(
                         TAG,
                         "========== ViewModel Login SUCCESS ==========",
                     )
+
                     _loginSuccess.value = true
+                    _message.value = "登入成功"
                 }
                 .onFailure { error ->
+
                     Log.e(
                         TAG,
                         "========== ViewModel Login FAILED ==========",
                         error,
                     )
+
+                    _loginSuccess.value = false
+
+                    _message.value =
+                        "登入失敗：${error.message}"
                 }
+
+            _isLoading.value = false
         }
     }
 }

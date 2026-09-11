@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
                 onLogin = { username ->
                     viewModel.login(username)
                 },
+                registerSuccess = viewModel.registerSuccess,
                 loginSuccess = viewModel.loginSuccess,
             )
         }
