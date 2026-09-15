@@ -9,7 +9,8 @@ import com.pinpin.passkey_demo.network.PasskeyApi
 import android.util.Log
 import com.pinpin.passkey_demo.data.model.LoginOptionsRequest
 import com.pinpin.passkey_demo.data.model.VerifyLoginRequest
-
+import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 
 class PasskeyRepository(
     private val api: PasskeyApi,
@@ -102,6 +103,26 @@ class PasskeyRepository(
 
             Result.success(Unit)
 
+        } catch (error: CreateCredentialException) {
+            Log.e(
+                "PasskeyRepository",
+                "Create Passkey failed",
+                error,
+            )
+
+            val userMessage = when (error) {
+                is CreatePublicKeyCredentialDomException -> {
+                    "這個帳號可能已經建立過 Passkey，請直接使用「Login with Passkey」登入。"
+                }
+
+                else -> {
+                    "Passkey 建立失敗，請稍後再試。"
+                }
+            }
+
+            Result.failure(
+                Exception(userMessage, error)
+            )
         } catch (e: Exception) {
 
             Log.e(

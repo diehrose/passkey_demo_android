@@ -49,8 +49,8 @@ class PasskeyViewModel(
                     _message.value = "Passkey 建立成功"
                 }
                 .onFailure { error ->
-                    _message.value =
-                        "Passkey 建立失敗：${error.message ?: "未知錯誤"}"
+                    _message.value = error.message
+                        ?: "Passkey 建立失敗，請稍後再試。"
                 }
 
             _isLoading.value = false
