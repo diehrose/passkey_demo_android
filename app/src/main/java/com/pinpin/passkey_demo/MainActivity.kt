@@ -44,6 +44,9 @@ class MainActivity : ComponentActivity() {
                 },
                 registerSuccess = viewModel.registerSuccess,
                 loginSuccess = viewModel.loginSuccess,
+                isLoading = viewModel.isLoading,
+                loadingMessage = viewModel.loadingMessage,
+                message = viewModel.message
             )
         }
 

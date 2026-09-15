@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
+import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun PasskeyScreen(
@@ -28,37 +29,45 @@ fun PasskeyScreen(
     onResetSuccess: () -> Unit,
     registerSuccess: StateFlow<Boolean>,
     loginSuccess: StateFlow<Boolean>,
+    isLoading: StateFlow<Boolean>,
+    loadingMessage: StateFlow<String>,
+    message: StateFlow<String?>,
 ) {
-
     var username by remember {
         mutableStateOf("test@example.com")
     }
 
     val isRegisterSuccess by registerSuccess.collectAsState()
     val isLoginSuccess by loginSuccess.collectAsState()
+    val loading by isLoading.collectAsState()
+    val progressMessage by loadingMessage.collectAsState()
+    val errorMessage by message.collectAsState()
 
     when {
+        loading -> {
+            PasskeyLoadingScreen(
+                message = progressMessage,
+            )
+        }
 
-        // 註冊成功
         isRegisterSuccess -> {
             RegisterSuccessScreen(
                 onContinue = onResetSuccess,
             )
         }
 
-        // 登入成功
         isLoginSuccess -> {
             LoginSuccessScreen()
         }
 
-        // 原本登入 / 註冊畫面
         else -> {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-
                 OutlinedTextField(
                     value = username,
                     onValueChange = {
@@ -66,7 +75,8 @@ fun PasskeyScreen(
                     },
                     label = {
                         Text("Username")
-                    }
+                    },
+                    singleLine = true,
                 )
 
                 Spacer(
@@ -76,7 +86,8 @@ fun PasskeyScreen(
                 Button(
                     onClick = {
                         onRegister(username)
-                    }
+                    },
+                    enabled = !loading,
                 ) {
                     Text("建立 Passkey")
                 }
@@ -89,8 +100,21 @@ fun PasskeyScreen(
                     onClick = {
                         onLogin(username)
                     },
+                    enabled = !loading,
                 ) {
                     Text("Login with Passkey")
+                }
+
+                if (!errorMessage.isNullOrBlank()) {
+                    Spacer(
+                        modifier = Modifier.height(24.dp)
+                    )
+
+                    Text(
+                        text = errorMessage.orEmpty(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }
@@ -186,6 +210,35 @@ private fun LoginSuccessScreen() {
         Text(
             text = "🔐 Passwordless Login",
             style = MaterialTheme.typography.titleMedium,
+        )
+    }
+}
+
+@Composable
+private fun PasskeyLoadingScreen(
+    message: String,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleMedium,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "請依照系統提示完成操作",
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }
