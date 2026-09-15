@@ -128,4 +128,10 @@ class PasskeyViewModel(
             _isLoading.value = false
         }
     }
+
+    fun resetSuccessState() {
+        _registerSuccess.value = false
+        _loginSuccess.value = false
+        _message.value = null
+    }
 }

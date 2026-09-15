@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 fun PasskeyScreen(
     onRegister: (String) -> Unit,
     onLogin: (String) -> Unit,
+    onResetSuccess: () -> Unit,
     registerSuccess: StateFlow<Boolean>,
     loginSuccess: StateFlow<Boolean>,
 ) {
@@ -40,7 +41,9 @@ fun PasskeyScreen(
 
         // 註冊成功
         isRegisterSuccess -> {
-            RegisterSuccessScreen()
+            RegisterSuccessScreen(
+                onContinue = onResetSuccess,
+            )
         }
 
         // 登入成功
@@ -95,7 +98,9 @@ fun PasskeyScreen(
 }
 
 @Composable
-private fun RegisterSuccessScreen() {
+private fun RegisterSuccessScreen(
+    onContinue: () -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -132,10 +137,11 @@ private fun RegisterSuccessScreen() {
             modifier = Modifier.height(24.dp),
         )
 
-        Text(
-            text = "🔐 Passwordless Login",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Button(
+            onClick = onContinue,
+        ) {
+            Text("繼續登入")
+        }
     }
 }
 

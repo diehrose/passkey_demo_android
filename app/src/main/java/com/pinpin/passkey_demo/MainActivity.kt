@@ -39,6 +39,9 @@ class MainActivity : ComponentActivity() {
                 onLogin = { username ->
                     viewModel.login(username)
                 },
+                onResetSuccess = {
+                    viewModel.resetSuccessState()
+                },
                 registerSuccess = viewModel.registerSuccess,
                 loginSuccess = viewModel.loginSuccess,
             )
