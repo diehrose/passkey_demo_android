@@ -15,6 +15,7 @@ import com.pinpin.passkey_demo.data.model.CredentialDeleteRequest
 import com.pinpin.passkey_demo.data.model.CredentialListRequest
 import com.pinpin.passkey_demo.data.model.CredentialListResponse
 import com.pinpin.passkey_demo.data.model.DeleteCredentialResponse
+import retrofit2.HttpException
 
 class PasskeyRepository(
     private val api: PasskeyApi,
@@ -289,7 +290,25 @@ class PasskeyRepository(
             )
 
             Result.success(Unit)
+        } catch (e: HttpException) {
+            val errorMessage = try {
+                val errorBody = e.response()?.errorBody()?.string()
 
+                if (!errorBody.isNullOrBlank()) {
+                    val json = JsonParser.parseString(errorBody).asJsonObject
+                    json.get("error")?.asString
+                } else {
+                    null
+                }
+            } catch (parseException: Exception) {
+                null
+            }
+
+            Result.failure(
+                Exception(
+                    errorMessage ?: "登入失敗 (${e.code()})"
+                )
+            )
         } catch (e: Exception) {
 
             Log.e(
