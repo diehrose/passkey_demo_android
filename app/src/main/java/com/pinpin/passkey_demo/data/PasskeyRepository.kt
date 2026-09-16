@@ -11,6 +11,10 @@ import com.pinpin.passkey_demo.data.model.LoginOptionsRequest
 import com.pinpin.passkey_demo.data.model.VerifyLoginRequest
 import androidx.credentials.exceptions.CreateCredentialException
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
+import com.pinpin.passkey_demo.data.model.CredentialDeleteRequest
+import com.pinpin.passkey_demo.data.model.CredentialListRequest
+import com.pinpin.passkey_demo.data.model.CredentialListResponse
+import com.pinpin.passkey_demo.data.model.DeleteCredentialResponse
 
 class PasskeyRepository(
     private val api: PasskeyApi,
@@ -296,5 +300,25 @@ class PasskeyRepository(
 
             Result.failure(e)
         }
+    }
+
+    suspend fun getCredentials(
+        username: String
+    ): CredentialListResponse {
+        return api.getCredentials(
+            CredentialListRequest(username)
+        )
+    }
+
+    suspend fun deleteCredential(
+        username: String,
+        credentialId: String
+    ): DeleteCredentialResponse {
+        return api.deleteCredential(
+            CredentialDeleteRequest(
+                username = username,
+                credentialId = credentialId
+            )
+        )
     }
 }
